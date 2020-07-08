@@ -4,6 +4,10 @@ import cucumber.api.java.en.Then;
 import cucumber.api.java.en.When;
 import  org.junit.Assert;
 
+import java.lang.reflect.Array;
+import java.util.ArrayList;
+import java.util.List;
+
 
 public class CucumberSteps {
 
@@ -78,6 +82,35 @@ public class CucumberSteps {
 
         if (!result.contains(expectedProcessorClockspeed)){
             Assert.fail("Expected value of Processor Clockspeed not returned from target machine.");
+        }
+    }
+
+    @Then("^I can send an argument based script to the Windows OE$")
+    public void i_can_send_an_argument_based_script_to_the_Windows_OE() throws Exception {
+        String remoteIP  = utils.getPropertyValue("TestMachineNetworkIP");
+        String psiScript = utils.getPropertyValue("PS1.ArgumentsTest");
+        String expectedPositive = utils.getExpectedResult("expected.argumentest.positive");
+        String expectedNegative = utils.getExpectedResult("expected.argumentest.negative");
+
+        //creating a List of Strings to contain arguments, even if its only 1 argument
+        List<String> args = new ArrayList<String>();
+        args.add(utils.getPropertyValue("PS1.ArgumentsTest.Arg1"));
+
+        PowerShellInvoker psi = new PowerShellInvoker();
+
+        //overloaded the executePowerShell method to optionally accept a List<String as a 3rd argument
+        String result = psi.executePowershellScript(remoteIP, psiScript, args);
+
+        //positive assertion - seeing if expected result is in file
+        if(result.contains(expectedPositive)){
+            //no need to really have anything in here, junit will assume a pass if there is no fail asserted
+        }
+
+        //negative assertion - will fail if expected positive is missing or expected negative is present
+        // ! = java for NOT
+        // || = java for OR
+        if(!result.contains(expectedPositive) || result.contains(expectedNegative)){
+            Assert.fail("Either the file didnt contain 'foo' or it did contain 'bar'.");
         }
     }
 }
